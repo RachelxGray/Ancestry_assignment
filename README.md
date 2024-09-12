@@ -70,3 +70,14 @@ dSQ --job-file vcf_ref_SNPS_contigs.txt --mem-per-cpu 8g -t 1-0:00:00 -J pileup 
 And submit the dsq file. 
 
 ### Genotype filtering in vcftools
+
+### Principal Components Analysis (PCA) in Plink 
+
+### Principal Components Analysis (PCA) in EMU
+
+### Private SNP Analysis in bcftools 
+
+### Genome-wide heterozygosity in PIXY
+
+### AdmixFrog
+
