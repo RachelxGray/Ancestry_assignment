@@ -1,13 +1,23 @@
 # Ancestry_assignment
 
 ## Mitochondrial Analysis 
-Key papers: 
-* 
 
-
-bcftools mpileup -f lgeorge.mtgenome --threads 8 --annotate AD,DP --bam-list refs.bamlist | bcftools call --ploidy 1 -m -Ov --format-fields gq -o mt_genome_refs_allHist_Sep23_final.vcf
-
-### bcftools mpileup
+### Submit dSQ script to remove hard and soft calls
+```
+module load dSQ
+dSQ --job-file clipping_dSQ.txt --mem-per-cpu 10g -t 1-00:00:00 -J pileup --mail-type ALL
+sbatch dsq*.sh
+```
+### Submit dSQ script to remove sites with > 10 mismatches 
+```
+module load dSQ
+dSQ --job-file bamtools_dSQ.txt --mem-per-cpu 10g -t 1-00:00:00 -J pileup --mail-type ALL
+sbatch dsq*.sh
+```
+### Call Genotypes 
+```
+bcftools mpileup -f /gpfs/gibbs/pi/caccone/ao566/genome/lgeorge.mtgenome.fasta --threads 8 --annotate AD,DP -Ou --bam-list mismatches.bamlist | bcftools call --ploidy 1 -Ov --format-fields gq -m -o Galaponly_bcftools_mt_genome_ploidy1_rmclipping_maxmismatch10.vcf
+```
 Generate VCF or BCF containing genotype likelihoods for one or multiple alignment (BAM or CRAM) files.
 * -f: reference sequence. Supplying this option will turn on left-alignment and normalization
 * --threads: Use multithreading with INT worker threads
@@ -16,13 +26,23 @@ Generate VCF or BCF containing genotype likelihoods for one or multiple alignmen
   * DP: Number of high-quality bases (Number=1,Type=Integer)
 * --bam-list: List of input alignment files, one file per line
 
-### bcftools call
 This command replaces the former bcftools view caller. Some of the original functionality has been temporarily lost in the process of transition under htslib, but will be added back on popular demand. 
 * --ploidy: predefined ploidy
 *  -m: alternative model for multiallelic and rare-variant calling designed to overcome known limitations in -c calling mode
 *   -Ov: output type (v=vcf)
 *   --format-fields: comma-separated list of FORMAT fields to output for each sample. Currently GQ and GP fields are supported. For convenience, the fields can be given as lower case letters.
 *   -o: output vcf name 
+```
+## Check for missing data and remove individuals with > 50% missing
+vcftools --vcf Galaponly_bcftools_mt_genome_ploidy1_rmclipping_maxmismatch10.vcf --missing-indv --out missing_indvs
+
+bcftools view -S keep.txt Galaponly_bcftools_mt_genome_ploidy1_rmclipping_maxmismatch10.vcf > missingremoved_Galaponly_bcftools_mt_genome_ploidy1_rmclipping_maxmismatch10_Jan25check.vcf
+```
+
+### Convert vcf to nexus 
+```
+python vcf2phylip.py --input missingremoved_Galaponly_bcftools_mt_genome_ploidy1_rmclipping_maxmismatch10.vcf --phylip-disable –nexus -m 1
+```
 
 ## Nuclear Analysis
 ### Genomic Chunks 
