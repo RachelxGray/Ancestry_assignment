@@ -44,7 +44,7 @@ bcftools view -S keep.txt Galaponly_bcftools_mt_genome_ploidy1_rmclipping_maxmis
 python vcf2phylip.py --input missingremoved_Galaponly_bcftools_mt_genome_ploidy1_rmclipping_maxmismatch10.vcf --phylip-disable –nexus -m 1
 ```
 
-## Nuclear Analysis
+## Genotype Calling 
 ### Genomic Chunks 
 The Galapagos giant tortoise genome consists of very long chromosomes. For computational and time efficieny the genome can be split into genomic chunks of a defined size, prior to analysis. 
 ```
@@ -64,32 +64,59 @@ awk '{print $1,$2+1,$3}' CheloAbing2.1MBfragments.bed | sed 's/ /\t/g' - > Chelo
 # save as sites_flag.txt on cluster
 ```
 ### Genotype calling in bcftools  
-Since the genome is split into chunks we will use a wrapper script (saved as vcf_step1.py) which will create a text file that runs the genotype calling on each desired chunk, dsq is then used to run these as seperate jobs in parallel on the cluster. 
+### Run genotype calling script: 
 ```
-#!/usr/bin/python
-
-import sys 
-
-# get scaffold list from input file #
-scaffold_f_name = sys.argv[1]
-scaffold_f = open (scaffold_f_name, "r")
-scaffold_list = scaffold_f.readlines()
-scaffold_list = [x.strip() for x in scaffold_list]
-
-with open("vcf_ref_SNPS_contigs.txt", "w") as out_f:
-	for scaffold in scaffold_list:
-		out_f.write(f"module load BCFtools BEDTools; bcftools mpileup -f /home/rg974/palmer_scratch/Updated_Floreana_Ref_Analyses/nuclear_analyses/Genome_fragments/CheloAbing2.fasta -r {scaffold} --annotate AD,DP -Ou --bam-list above4x_coverage.bamlist | bcftools call --skip-variants indels -mv -Ov -f GQ -o ./output/{scaffold}.vcf; bedtools intersect -header -a ./output/{scaffold}.vcf -b /gpfs/gibbs/pi/caccone/ao566/genome/repeatmasker.sorted.merged.complement.bed > ./output/{scaffold}.noREPS.vcf; rm ./output/{scaffold}.vcf; bgzip ./output/{scaffold}.noREPS.vcf;\n")
-out_f.close()
-```
-Then run the text file in a seperate bash script: 
-```
-python vcf_step1.py /home/rg974/palmer_scratch/Updated_Floreana_Ref_Analyses/nuclear_analyses/Genome_fragments/sites_1millionbp.txt
 module load dSQ
-dSQ --job-file vcf_ref_SNPS_contigs.txt --mem-per-cpu 8g -t 1-0:00:00 -J pileup --mail-type ALL
+dSQ --job-file bcftools_calling_100kb_dSQ.txt --mem-per-cpu 8g -t 1-0:00:00 -J pileup --mail-type ALL
 ```
-And submit the dsq file. 
+### Make and Run vcftools script filtering for depth of 4 and minimum genotype quality of 18. 
+```
+for x in *.vcf.gz; do 
+base_name=$(basename "$x")
+name_without_extension="${base_name%.vcf.gz}"
+echo "vcftools --gzvcf $x --minDP 4 --minGQ 18 --recode  --stdout | bgzip > ./depth4_GQ18/filtered_minDP4GQ18_${name_without_extension}.recode.vcf.gz" >>  vcftools_filterdepth_dSQtxt; 
+done
+module load dSQ
+dSQ --job-file vcftools_filterdepth_dSQ.txt --mem-per-cpu 8g -t 1-0:00:00 -J pileup --mail-type ALL
+```
+### Concat the genome chunks
+```
+ls *.gz > bcftools_concat.txt
+bcftools concat --file-list bcftools_concat.txt --threads 8 -O v -o - | bgzip -c > refshybs_minDP6GQ18_v2.1.vcf.gz
+```
 
-### Genotype filtering in vcftools
+### Diversity Statistics (Nucleotide Diversity and Genome-Wide Heterozygosity)
+## Filter concatted vcf 
+```
+vcftools --gzvcf refshybs_minDP4GQ18_v2.1.vcf.gz --max-missing 0.9 --recode --stdout  | bgzip -c > ./missing10/missing10_refshybs_minDP6GQ18_v2.1.vcf.gz
+
+gunzip missing10_refshybs_minDP6GQ18_v2.1.vcf.gz
+vcftools --vcf missing10_refshybs_minDP6GQ18_v2.1.vcf.gz --site-mean-depth --out missing10
+bgzip missing10_refshybs_minDP6GQ18_v2.1.vcf.gz
+
+Rscript mean.R
+
+vcftools --gzvcf missing10_refshybs_minDP6GQ18_v2.1.vcf.gz --max-meanDP 14.02 --recode --stdout  | bgzip -c > ./max_DP/maxDP_missing10_refshybs_minDP6GQ18_v2.1.vcf.gz
+
+
+
+
+
+
+```
+
+## Nucleotide Diversity in PIXY 
+```
+pixy --stats pi \
+--vcf maxDP_missing10_refshybs_minDP6GQ18_v2.1.vcf.gz \
+--populations popfile.txt \
+--window_size 10000 \
+--n_cores 8
+```
+### Genome-wide heterozygosity
+```
+vcftools --gzvcf maxDP_missing10_refshybs_minDP6GQ18_v2.1.vcf.gz --het
+```
 
 ### Principal Components Analysis (PCA) in Plink 
 
