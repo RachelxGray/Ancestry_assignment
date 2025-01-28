@@ -44,25 +44,6 @@ bcftools view -S keep.txt Galaponly_bcftools_mt_genome_ploidy1_rmclipping_maxmis
 python vcf2phylip.py --input missingremoved_Galaponly_bcftools_mt_genome_ploidy1_rmclipping_maxmismatch10.vcf --phylip-disable –nexus -m 1
 ```
 
-## Genotype Calling 
-### Genomic Chunks 
-The Galapagos giant tortoise genome consists of very long chromosomes. For computational and time efficieny the genome can be split into genomic chunks of a defined size, prior to analysis. 
-```
-#Load BEDTools:
-module load BEDTools/2.30.0-GCCcore-10.2.0
-
-#Retrieve the first two columns of the indexed genome file:7
-cut -f 1,2 /home/rg974/palmer_scratch/CheloAbing2/CheloAbing2.fasta.fai > CheloAbing2.genome.txt
-
-#Create a BED file divided by 1-Mb windows:
-bedtools makewindows -g CheloAbing2.genome.txt -w 1000000 > CheloAbing2.1MBfragments.bed
-
-#Convert the BED file into the format required by ANGSD (just adding a unit to the second column):
-awk '{print $1,$2+1,$3}' CheloAbing2.1MBfragments.bed | sed 's/ /\t/g' - > CheloAbing2.1MBfragments.txt
-
-# in excel have to manually convert CheloAbing2.1MBfragments.txt to the correct format for angsd -rf flag
-# save as sites_flag.txt on cluster
-```
 ### Genotype calling in bcftools  
 ### Run genotype calling script: 
 ```
