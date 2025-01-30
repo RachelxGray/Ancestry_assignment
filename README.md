@@ -57,27 +57,21 @@ dSQ --job-file vcftools_filterdepth_dSQ.txt --mem-per-cpu 8g -t 1-0:00:00 -J pil
 ### Concat the genome chunks
 ```
 ls *.gz > bcftools_concat.txt
-bcftools concat --file-list bcftools_concat.txt --threads 8 -O v -o - | bgzip -c > refshybs_minDP6GQ18_v2.1.vcf.gz
+bcftools concat --file-list bcftools_concat.txt --threads 8 -O v -o - | bgzip -c > refshybs_minDP4GQ18_v2.1.vcf.gz
 ```
 
 ### Diversity Statistics (Nucleotide Diversity and Genome-Wide Heterozygosity)
 ## Filter concatted vcf 
 ```
-vcftools --gzvcf refshybs_minDP4GQ18_v2.1.vcf.gz --max-missing 0.9 --recode --stdout  | bgzip -c > ./missing10/missing10_refshybs_minDP6GQ18_v2.1.vcf.gz
+vcftools --gzvcf refshybs_minDP4GQ18_v2.1.vcf.gz --max-missing 0.9 --recode --stdout  | bgzip -c > ./missing10/missing10_refshybs_minDP4GQ18_v2.1.vcf.gz
 
-gunzip missing10_refshybs_minDP6GQ18_v2.1.vcf.gz
-vcftools --vcf missing10_refshybs_minDP6GQ18_v2.1.vcf.gz --site-mean-depth --out missing10
-bgzip missing10_refshybs_minDP6GQ18_v2.1.vcf.gz
+gunzip missing10_refshybs_minDP4GQ18_v2.1.vcf.gz
+vcftools --vcf missing10_refshybs_minDP4GQ18_v2.1.vcf.gz --site-mean-depth --out missing10
+bgzip missing10_refshybs_minDP4GQ18_v2.1.vcf.gz
 
 Rscript mean.R
 
 vcftools --gzvcf missing10_refshybs_minDP6GQ18_v2.1.vcf.gz --max-meanDP 14.02 --recode --stdout  | bgzip -c > ./max_DP/maxDP_missing10_refshybs_minDP6GQ18_v2.1.vcf.gz
-
-
-
-
-
-
 ```
 
 ## Nucleotide Diversity in PIXY 
@@ -93,13 +87,58 @@ pixy --stats pi \
 vcftools --gzvcf maxDP_missing10_refshybs_minDP6GQ18_v2.1.vcf.gz --het
 ```
 
-### Principal Components Analysis (PCA) in Plink 
+### Principal Components Analysis (PCA) with smartSNP
+## Filter concatted vcf 
+```
+# filter to only ESP, FLO, VW, Putative Hybs
+bcftools view -S refshybs.txt refshybs_minDP4GQ18_v2.1.vcf.gz > ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
+bgzip ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
+# retain only biallelic sites 
+vcftools --gzvcf ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf --max-alleles 2 --min-alleles 2 --recode --stdout | bgzip > ./biallelic/biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
+# allow 10% missing data
+vcftools --gzvcf biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz --max-missing 0.9 --recode --stdout  | bgzip -c > ./missing10/missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz
+# max DP, one SD above mean
+gunzip missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz
+vcftools --vcf missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf --site-mean-depth --out missing10
+bgzip missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz
+Rscript mean.R
+vcftools --gzvcf missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz.gz --max-meanDP 21.06 --recode --stdout  | bgzip -c > ./max_DP/maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz
+# mac of 1
+vcftools --gzvcf maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz --mac 1 --recode --stdout | bgzip -c > ./mac1/mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz
+# find LD sites
+gunzip mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz
+awk 'BEGIN{OFS="\t"} !/#/ {sub(/\./, $1"_"$2, $3)}1' mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf  > annotated_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
+bgzip mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
+bgzip annotated_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
+plink --vcf annotated_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz --indep-pairwise 50 5 0.5 --double-id --allow-extra-chr --out Keep_loci
+sed 's/_/\t/' Keep_loci.prune.in > Keep_loci.txt
+# filter to keep sites not in LD
+vcftools --gzvcf mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz --positions Keep_loci.txt --recode --out LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf 
+bgzip LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
+```
+## Prepare vcf for smartSNP format
+```
+gunzip LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz
+awk 'BEGIN{OFS="\t"} !/#/ {sub(/\./, $1"_"$2, $3)}1' LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf  > annotated_LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
+bgzip LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
+bgzip annotated_LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
+plink --vcf annotated_LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz --make-bed --out 10RefsHybs --allow-extra-chr 0 --double-id
+plink --bfile 10RefsHybs --recode A-transpose --out 10RefsHybs --allow-extra-chr 0 --double-id
+```
+## Run smartSNP PCA with Projection 
+```
+library(smartsnp)
+my_groups <- c(1:140)
+my_ancient <- c(1:96)
+numSamples = nrow(read.table("10RefsHybs.fam"))
+head(numSamples)
+pcaR2 <- smart_pca(snp_data = "RefsHybs_genotypeMatrix.traw", sample_group = my_groups, sample_project = my_ancient,missing_value = NA, scaling="none",pc_project = c(1, 2))
+```
+## Visualise PCA
 
-### Principal Components Analysis (PCA) in EMU
 
 ### Private SNP Analysis in bcftools 
 
-### Genome-wide heterozygosity in PIXY
 
 ### AdmixFrog
 
