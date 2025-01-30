@@ -2,12 +2,6 @@
 
 ## Mitochondrial Analysis 
 
-### Submit dSQ script to remove hard and soft calls
-```
-module load dSQ
-dSQ --job-file clipping_dSQ.txt --mem-per-cpu 10g -t 1-00:00:00 -J pileup --mail-type ALL
-sbatch dsq*.sh
-```
 ### Submit dSQ script to remove sites with > 10 mismatches 
 ```
 module load dSQ
