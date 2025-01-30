@@ -38,7 +38,7 @@ bcftools view -S keep.txt Galaponly_bcftools_mt_genome_ploidy1_rmclipping_maxmis
 python vcf2phylip.py --input missingremoved_Galaponly_bcftools_mt_genome_ploidy1_rmclipping_maxmismatch10.vcf --phylip-disable –nexus -m 1
 ```
 
-### Genotype calling in bcftools  
+## Nuclear Analysis - Genotype Calling
 ### Run genotype calling script: 
 ```
 module load dSQ
