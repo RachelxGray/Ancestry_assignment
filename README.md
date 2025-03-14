@@ -132,7 +132,15 @@ my_groups <- c(1:140)
 my_ancient <- c(1:96)
 numSamples = nrow(read.table("10RefsHybs.fam"))
 head(numSamples)
-pcaR2 <- smart_pca(snp_data = "RefsHybs_genotypeMatrix.traw", sample_group = my_groups, sample_project = my_ancient,missing_value = NA, scaling="none",pc_project = c(1, 2))
+pca <- smart_pca(snp_data = "RefsHybs_genotypeMatrix.traw", sample_group = my_groups, sample_project = my_ancient,missing_value = NA, scaling="none",pc_project = c(1, 2))
+# extract eigens and other data
+eigen <- pca$pca.eigenvalues # extract PCA eigenvalues
+load <- pca$pca$pca.snp_loadings # extract principal coefficients (SNP loadings)
+pca <- pca$pca.sample_coordinates
+# save data for plotting
+write.table(eigen,"eigenvals.txt")
+write.table(coord,"eigenvec.txt")
+write.table(load,"loads.txt")
 ```
 ## Visualise PCA
 
