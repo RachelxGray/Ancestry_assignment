@@ -193,5 +193,7 @@ admixfrog-ref --out AIMS_ESP_FLO_PBR.xz --vcf-ref /home/rg974/palmer_scratch/Upd
 ```
 
 ### Run admixfrog
+```
 module load dSQ
 dSQ --job-file admix_frog.txt --mem-per-cpu 8g -t 1-0:00:00 -J pileup --mail-type ALL
+```
