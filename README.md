@@ -146,7 +146,38 @@ write.table(load,"loads.txt")
 
 
 ### Private SNP Analysis in bcftools 
+## Hybrids 
+```
+filename="hybs.txt"
 
+for x in $(cat "$filename")
+do
+bcftools view -s $x /home/rg974/palmer_scratch/Updated_Floreana_Ref_Analyses/Chapter3_analyses/bcftools_calling/version2.1/unequal_indep/depth4_GQ18/biallelic/missing10/max_DP/mac1/RefsHybs_alone/new_10missing/mac1_maxDP21_missing10_ReducedRefsHybs_biallelic_refshybs_minDP4GQ18_v2.1.vcf.gz  > $x.vcf
+bgzip $x.vcf
+tabix $x.vcf.gz
+bcftools merge $x.vcf.gz /home/rg974/palmer_scratch/Updated_Floreana_Ref_Analyses/Chapter3_analyses/bcftools_calling/version2.1/unequal_indep/depth4_GQ18/biallelic/missing10/max_DP/mac1/RefsHybs_alone/new_10missing/Refs_mac1_maxDP21_missing10_ReducedRefsHybs_biallelic_refshybs_minDP4GQ18_v2.1.vcf.gz > "$x"_Refs_.vcf
+bgzip "$x"_Refs_.vcf
+tabix "$x"_Refs_.vcf
+bcftools view -s $x -x "$x"_Refs_.vcf.gz > "$x"_private_snps.vcf
+bcftools stats "$x"_private_snps.vcf | awk '/^SN/' > "$x"_psnps.txt
+rm $x*.vcf
+rm $x*.gz
+rm $x*.tbi
+printf "Completed, %s\n" $x
+done
+```
+## References 
+```
+filename="refs.txt"
+
+for x in $(cat "$filename")
+do
+bcftools view -s $x -x /home/rg974/palmer_scratch/Updated_Floreana_Ref_Analyses/Chapter3_analyses/bcftools_calling/version2.1/unequal_indep/depth4_GQ18/biallelic/missing10/max_DP/mac1/RefsHybs_alone/new_10missing/Refs_mac1_maxDP21_missing10_ReducedRefsHybs_biallelic_refshybs_minDP4GQ18_v2.1.vcf.gz > "$x"_private_snps.vcf
+bcftools stats "$x"_private_snps.vcf | awk '/^SN/' > "$x"_psnps.txt
+rm $x*.vcf
+printf "Completed, %s\n" $x
+done
+```
 
 ### AdmixFrog
 
