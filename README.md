@@ -87,8 +87,8 @@ pixy --stats pi \
 vcftools --gzvcf maxDP_missing10_refshybs_minDP6GQ18_v2.1.vcf.gz --het
 ```
 
-### Principal Components Analysis (PCA) with smartSNP
-## Filter concatted vcf 
+## Principal Components Analysis (PCA) with smartSNP
+### Filter concatted vcf 
 ```
 # filter to only ESP, FLO, VW, Putative Hybs
 bcftools view -S refshybs.txt refshybs_minDP4GQ18_v2.1.vcf.gz > ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
@@ -116,7 +116,7 @@ sed 's/_/\t/' Keep_loci.prune.in > Keep_loci.txt
 vcftools --gzvcf mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz --positions Keep_loci.txt --recode --out LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf 
 bgzip LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
 ```
-## Prepare vcf for smartSNP format
+### Prepare vcf for smartSNP format
 ```
 gunzip LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz
 awk 'BEGIN{OFS="\t"} !/#/ {sub(/\./, $1"_"$2, $3)}1' LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf  > annotated_LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf
@@ -125,7 +125,7 @@ bgzip annotated_LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshy
 plink --vcf annotated_LDpruned_mac1_maxDP21_missing10_biallelic_ReducedRefsHybs_refshybs_minDP4GQ18_v2.1.vcf.gz --make-bed --out 10RefsHybs --allow-extra-chr 0 --double-id
 plink --bfile 10RefsHybs --recode A-transpose --out 10RefsHybs --allow-extra-chr 0 --double-id
 ```
-## Run smartSNP PCA with Projection 
+### Run smartSNP PCA with Projection 
 ```
 library(smartsnp)
 my_groups <- c(1:140)
@@ -142,11 +142,11 @@ write.table(eigen,"eigenvals.txt")
 write.table(coord,"eigenvec.txt")
 write.table(load,"loads.txt")
 ```
-## Visualise PCA
+### Visualise PCA
 
 
-### Private SNP Analysis in bcftools 
-## Hybrids 
+## Private SNP Analysis in bcftools 
+### Hybrids 
 ```
 filename="hybs.txt"
 
@@ -166,7 +166,7 @@ rm $x*.tbi
 printf "Completed, %s\n" $x
 done
 ```
-## References 
+### References 
 ```
 filename="refs.txt"
 
