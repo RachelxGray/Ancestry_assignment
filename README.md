@@ -179,5 +179,19 @@ printf "Completed, %s\n" $x
 done
 ```
 
-### AdmixFrog
+## AdmixFrog
+### Create Input File 
+```
+module load Python/3.8.6-GCCcore-10.2.0
+module load XZ/5.2.5-GCCcore-10.2.0
 
+admixfrog-ref --out AIMS_ESP_FLO_PBR.xz --vcf-ref /home/rg974/palmer_scratch/Updated_Floreana_Ref_Analyses/Chapter3_analyses/bcftools_calling/version2.1/unequal_indep/depth4_GQ18/biallelic/max_DP/AIMs_FLO_ESP_VW_maxDP_RefsHybs_biallelic_minDP4GQ18_v2.1.vcf.recode.vcf.gz \
+    --state-file pops2.yaml \
+    --states FLO ESP VW \
+    --chroms chr01,chr02,chr03,chr04,chr05,chr06,chr07,chr08,chr09,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chr23,chr24,chr25,chr26,scaffold0001,scaffold0027 
+
+```
+
+### Run admixfrog
+module load dSQ
+dSQ --job-file admix_frog.txt --mem-per-cpu 8g -t 1-0:00:00 -J pileup --mail-type ALL
