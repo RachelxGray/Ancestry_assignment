@@ -267,3 +267,34 @@ VWESP_PROP
 VWFLO_PROP
 FLOESP_PROP
 ```
+### Visualise in R as a stacked Plot 
+```
+library(ggplot2)
+library(tidyverse)
+data <- read.csv("Refs_plot.csv")
+head(data)
+
+data_long <- data %>% 
+  pivot_longer(cols = FLO:VWESP, names_to = "condition", values_to = "value")
+head(data_long)
+
+# Custom colours
+custom_colours <- c("FLO" = "#DB9D85", "ESP" = "#B1AF64", "VW" = "#87AEDF", "FLOVW" = "indianred4", "FLOESP" = "antiquewhite2", "VWESP" = "deepskyblue4")
+data_long$X <- factor(data_long$X, levels = data$X)
+
+png("Refs_AdmixFrog_stacked_barplot.png", width = 1754, height = 1240, res = 300)
+# Stacked + percent plot
+ggplot(data_long, aes(fill = condition, y = value, x = X)) + 
+  geom_bar(position = "fill", stat = "identity",width = 0.9) +
+  scale_fill_manual(values = custom_colours) +
+  labs(title = "", y = "Average Genome Wide Posteriod Probability", x = "Sample ID") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 8),
+        axis.text.y = element_text(size = 8),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "none")
+
+dev.off()
+```
