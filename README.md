@@ -197,3 +197,73 @@ admixfrog-ref --out AIMS_ESP_FLO_PBR.xz --vcf-ref /home/rg974/palmer_scratch/Upd
 module load dSQ
 dSQ --job-file admix_frog.txt --mem-per-cpu 8g -t 1-0:00:00 -J pileup --mail-type ALL
 ```
+### Extract bin results in R for genome-wide proportions 
+```
+dat <- read.csv("***.bin")
+head(dat)
+
+VW <- dat$VW
+ESP<- dat$ESP
+FLO <- dat$FLO
+VWFLO <- dat$VWFLO
+VWESP <- dat$VWESP
+FLOESP <- dat$FLOESP
+
+
+## VW
+VW_results <- numeric(4481)
+for(i in 1:length(VW)) {
+  VW_results[i] <- VW[i]*500000
+}
+VW_SUM <- sum(VW_results)
+VW_PROP <- (VW_SUM/(4481*500000))*100
+
+## ESP
+ESP_results <- numeric(4481)
+for(i in 1:length(ESP)) {
+  ESP_results[i] <- ESP[i]*500000
+}
+ESP_SUM <- sum(ESP_results)
+ESP_PROP <- (ESP_SUM/(4481*500000))*100
+
+## FLO
+FLO_results <- numeric(4481)
+for(i in 1:length(FLO)) {
+  FLO_results[i] <- FLO[i]*500000
+}
+FLO_SUM <- sum(FLO_results)
+FLO_PROP <- (FLO_SUM/(4481*500000))*100
+
+## VWESP
+VWESP_results <- numeric(4481)
+for(i in 1:length(VWESP)) {
+  VWESP_results[i] <- VWESP[i]*500000
+}
+VWESP_SUM <- sum(VWESP_results)
+VWESP_PROP <- (VWESP_SUM/(4481*500000))*100
+
+## VWFLO
+VWFLO_results <- numeric(4481)
+for(i in 1:length(VWFLO)) {
+  VWFLO_results[i] <- VWFLO[i]*500000
+}
+VWFLO_SUM <- sum(VWFLO_results)
+VWFLO_PROP <- (VWFLO_SUM/(4481*500000))*100
+
+## ESPFLO
+FLOESP_results <- numeric(4481)
+for(i in 1:length(FLOESP)) {
+  FLOESP_results[i] <- FLOESP[i]*500000
+}
+FLOESP_SUM <- sum(FLOESP_results)
+FLOESP_PROP <- (FLOESP_SUM/(4481*500000))*100
+
+check <- VW_PROP + ESP_PROP + FLO_PROP + VWESP_PROP + VWFLO_PROP + FLOESP_PROP
+
+VW_PROP
+ESP_PROP
+FLO_PROP
+VWESP_PROP
+VWFLO_PROP
+FLOESP_PROP
+```
