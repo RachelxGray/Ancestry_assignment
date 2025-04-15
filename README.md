@@ -183,16 +183,14 @@ write.table(eigen,"NoProject_140_eigenvals.txt")
 write.table(pca,"NoProject_eigenvec.txt")
 ```
 ### Visualise PCA
+```
 library(readr)
-
 # important plink output files 
 PCA_file_covMat <- read.csv("projected_PCA.csv", header=TRUE) # import the .cov file
 head(PCA_file_covMat)
-
 # load in the sample ID assignments 
 meta<- read.csv("sampleID_cols.csv", header=FALSE)
 head(meta)
-
 factor_colors <- as.character(as.factor(meta$V3))
 col_levs <- unique(factor_colors)
 factor_shapes <- as.numeric(meta$V2)
@@ -212,7 +210,7 @@ plot(plot2$PC1, plot2$PC2,
      col = plot2$factor_colors,          
      pch = as.numeric(plot2$factor_shapes),
      cex=1) 
-
+```
 
 ## Private SNP Analysis in bcftools 
 ### Hybrids 
