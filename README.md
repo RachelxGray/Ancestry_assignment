@@ -201,7 +201,7 @@ PC2 <- PCA_file_covMat$PC2
 PC3 <- PCA_file_covMat$PC3
 PC4 <- PCA_file_covMat$PC4
 
-plot <- cbind(pop_assings, PC1,PC2,PC3,PC4,factor_colors,factor_shapes)
+plot <- cbind(PC1,PC2,PC3,PC4,factor_colors,factor_shapes)
 head(plot)
 plot2 <- as.data.frame(plot)
 head(plot2)
