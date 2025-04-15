@@ -132,15 +132,55 @@ my_groups <- c(1:140)
 my_ancient <- c(1:96)
 numSamples = nrow(read.table("10RefsHybs.fam"))
 head(numSamples)
-pca <- smart_pca(snp_data = "RefsHybs_genotypeMatrix.traw", sample_group = my_groups, sample_project = my_ancient,missing_value = NA, scaling="none",pc_project = c(1, 2))
+?smart_pca
+pca_PC12 <- smart_pca(snp_data = "10RefsHybs.traw", sample_group = my_groups,missing_value = NA, scaling="none",program_svd = "bootSVD",sample_project = my_ancient,pc_project = c(1,2))
+pca_PC34 <- smart_pca(snp_data = "10RefsHybs.traw", sample_group = my_groups,missing_value = NA, scaling="none",program_svd = "bootSVD",sample_project = my_ancient,pc_project = c(3,4))
+# extract eigens and other data
+eigen <- pca_PC12$pca.eigenvalues # extract PCA eigenvalues
+load <- pca_PC12$pca$pca.snp_loadings # extract principal coefficients (SNP loadings)
+pca_PC12 <- pca_PC12$pca.sample_coordinates
+pca_PC34 <- pca_PC34$pca.sample_coordinates
+
+eigenvalues <- c(130428.6877, 41236.67048,17697.919817,6742.161622,5714.661940, 5286.143612,5056.339411,4577.852233,4342.846216,4033.359383,3826.748154,3747.234795, 3711.567199,3638.707716,3536.139638,3471.33905,3412.336317,3378.152617,3350.169572, 3326.825417,3202.100253,3144.111055,3108.952277,3097.608666,3021.843927,2926.888843,2900.836395,2764.814801,2645.211651,2616.156115,2553.674668,2509.080031,2409.254483,2310.344832,2275.209167,2222.696024,2215.368914,2070.505338,1834.3073272,1734.286243,1632.9293045,1562.1737595,1403.0073478,1220.2198550)
+
+total_variance <- sum(eigenvalues)
+variance_explained <- sum(eigenvalues) / total_variance * 100
+PC1 = (130428.6877 / total_variance) * 100 ## 41.02854
+PC2 = (41236.67048 / total_variance) * 100 ## 12.97169
+PC3 = (17697.919817 / total_variance) * 100 ## 5.567179
+PC4 = (6742.161622 / total_variance) * 100 ## 2.120861
+
+# save data for plotting
+write.table(eigen,"Project_44_eigenvals.txt")
+write.table(pca_PC12,"Project_PC12_eigenvec.txt")
+write.table(pca_PC34,"Project_PC34_eigenvec.txt")
+```
+### Run smartSNP PCA NO Projection 
+```
+library(smartsnp)
+my_groups <- c(1:140)
+my_ancient <- c(1:96)
+numSamples = nrow(read.table("10RefsHybs.fam"))
+head(numSamples)
+?smart_pca
+pca <- smart_pca(snp_data = "10RefsHybs.traw", sample_group = my_groups,missing_value = NA, scaling="none",program_svd = "bootSVD")
 # extract eigens and other data
 eigen <- pca$pca.eigenvalues # extract PCA eigenvalues
 load <- pca$pca$pca.snp_loadings # extract principal coefficients (SNP loadings)
 pca <- pca$pca.sample_coordinates
+
+eigenvalues <- c(120116.62124,20700.09474,8522.932741,7705.185363,5758.841694,3579.48966,2930.646962,2625.221834,2194.865296,2165.193960,2034.628699,1943.568941,1897.813399,1723.3798446,1696.0344557,1674.9075883,1586.191324,1570.2171842,1536.1059070,1514.3372783,1469.5757164,1447.0736982,1419.886123,1416.1533840,1389.5326206,1371.2621222,1349.3218639,1335.4450745,1322.458613,1299.4168746,1290.0103049,1273.0990080,1269.3338072,1248.6370930,1232.2238244,1222.6163262,1209.9564860,1194.0109487,1184.1151192,1174.8272562,1166.5631165,1160.5085892,1151.8567133,1143.6126727,1129.9704257,1117.7535049,1111.4437921,1098.9798330,1094.3025717,1079.4664752,1068.3041109,    1055.1213702,1052.593518,1042.1387423,1040.1859420,1031.0811637,1020.6920604,1014.9710644,1013.1223778,1006.0560868,999.0382129,988.0367368,982.3132510,978.6355836,972.6734185,966.8485105,960.2781054,949.9614376,945.775898,941.5899851,934.9257116,923.2682102,913.2771400,909.3573570,904.8394389,900.7939172,897.6750669,891.4419062,886.1399177,879.3298606,875.8289703,871.5094448,862.4720342,853.5201752,850.6473558,844.4597809,833.4441935,832.287579,830.6390172,821.2977640,809.505973,803.4395254,798.500496,794.7866491,785.5697809,771.7860407,765.9281747,759.8616216,754.1716589,749.5781806,743.3349818,741.1502003,732.2300744,727.4785802,716.2792300,714.8788150,704.505299,702.8504698,694.7064856,691.5827127,689.7288409,667.0318508,664.0722357,655.6487994,642.3291367,632.7382972,617.191738,610.5830642,591.1298110,574.2207439,570.0503956,566.876740,543.7035718,535.2596511,522.260545,509.8278047,492.0476524,484.9361971,458.0872655,445.1846043,434.1950663,428.9811555,408.1157529,401.1552636,380.1668673,327.5952664,310.2162058,302.9949617,242.4340907,194.5157110)
+
+total_variance <- sum(eigenvalues)
+variance_explained <- sum(eigenvalues) / total_variance * 100
+PC1 = (120116.62124 / total_variance) * 100 ## 40.27223
+PC2 = (20700.09474/ total_variance) * 100 ## 6.940246
+PC3 = (8522.932741/ total_variance) * 100 ## 2.857535
+PC4 = (7705.185363 / total_variance) * 100 ## 2.583364
+
 # save data for plotting
-write.table(eigen,"eigenvals.txt")
-write.table(coord,"eigenvec.txt")
-write.table(load,"loads.txt")
+write.table(eigen,"NoProject_140_eigenvals.txt")
+write.table(pca,"NoProject_eigenvec.txt")
 ```
 ### Visualise PCA
 
